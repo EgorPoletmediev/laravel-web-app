@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Link;
 use App\Models\File;
-//use App\Http\Requests\StoreLinkRequest;
-//use App\Http\Requests\UpdateLinkRequest;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -17,11 +15,12 @@ class LinkController extends Controller implements HasMiddleware
 {
     public static function middleware(){
         return [
-            new Middleware('auth:sanctum', except: ['index', 'show', 'download'])
+            new Middleware('auth:sanctum', except: ['download', 'check_valid'])
         ];
     }
 
-    public function download(Request $request,Link $link){
+    public function download(Request $request,Link $link){ //скачиваем файл по ссылке
+
         $request->validate([
             'password' => 'required'
         ]);
@@ -32,34 +31,44 @@ class LinkController extends Controller implements HasMiddleware
                 ]);
             $filePath = $file->path;
             return Storage::download($file->path);
-
         }
+
         return back()->withErrors([
             'message'=>'The provided credentials is incorrect.'
             ]);
     }
 
 
-    public function index(File $file)
+    public function index(File $file) //выводим список ссылок, относящихся к файлу
     {
+        Gate::authorize('modify', $file);
+
         $links = $file->links->sortByDesc('created_at');
         return  view('files.index',['links'=>$links]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request, File $file)
+    public function store(Request $request, File $file) //создаем новую ссылку
     {
+        Gate::authorize('modify', $file);
+
         $temp = $request->validate([
-            'password'=>'required'
+            'password'=>'required|min:8'
         ]);
         $link = $file->links()->create($temp);
         return back();
     }
+    public function show(File $file){ //возвращаем 404 если пользователь хочет посмотреть ссылку
+        abort(404);
+    }
 
-//    public function destroy(Link $link)
-//    {
-//        //
-//    }
+    public function check_valid($link) { //проверяем ссылку на существование, в противном случае возвращаем 404
+        $link = Link::where('link', $link)->first();
+        if (!$link) {
+            //return redirect()->route('download')->withErrors([
+            //    'link' => 'The provided link is invalid.']);
+            abort(404);
+        }
+        return view('down.download', ['link' => $link]);
+    }
+
 }

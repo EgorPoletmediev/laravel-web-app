@@ -1,5 +1,7 @@
 <x-layout>
-    <h1 class = "title">To download file you should insert link into URL</h1>
+    @if(!isset($link))<h1 class = "title">To download file you should insert link into URL</h1>
+    @else <h1 class = "title">Write download password</h1>
+    @endif
     <form action="{{ isset($link) ? route('downloadLink', $link) :'#' }}" method="POST">
         @if(isset($link))
             @csrf

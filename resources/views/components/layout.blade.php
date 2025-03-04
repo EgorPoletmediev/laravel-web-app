@@ -11,7 +11,7 @@
 <header class = "bg-slate-800 shadow-lg text-xl">
     <nav>
         <a href="{{ route('files.index') }}" class = "nav-link text-xl">Home</a>
-        <a href="{{ route('download') }}" class = "nav-link text-xl">Download file</a>
+        {{--<a href="{{ route('download') }}" class = "nav-link text-xl">Download file</a>--}}
         <div class = "flex item-center gap-4">
                 @auth
                 <form action="{{ route('logout') }}" method="post">

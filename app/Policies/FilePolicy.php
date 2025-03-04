@@ -12,6 +12,6 @@ class FilePolicy
     {
         return $user->id === $file->user_id
             ? Response::allow() :
-            Response::deny('You suck');
+            Response::deny('You can\'t modify this file.');
     }
 }
